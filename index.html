@@ -5,49 +5,88 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<h1><img src="y8-logo.png" alt="SAMMARTINO GAMES" width="500" height="100"></h1>
+<body>
 
-<button onclick="window.location.href='GameFiles/baldisbasics/index.html'">
-    Baldi's Basics <br>
-    <img src="GameFiles/baldisbasics/splash.png" alt="Button Icon" width="60" height="60">
-</button>
+<h1>
+    <img src="y8-logo.png" alt="SAMMARTINO GAMES" width="500" height="100">
+</h1>
 
-<button onclick="window.location.href='GameFiles/bitlife/index.html'">
-    Bitlife <br>
-    <img src="GameFiles/bitlife/logo.png" alt="Button Icon" width="60" height="60">
-</button>
+<div id="games"></div>
 
-<button onclick="window.location.href='GameFiles/chromedino/index.html'">
-    Chromedino <br>
-    <img src="GameFiles/chromedino/images/default_100_percent/100-error-offline.png" alt="Button Icon" width="60" height="60">
-</button>
+<script>
+const repoOwner = "JXFC";
+const repoName = "sammartinogames";
+const gamesFolder = "GameFiles";
 
-<button onclick="window.location.href='GameFiles/crossyroad/index.html'">
-    Crossy Road <br>
-    <img src="GameFiles/crossyroad/sprites/chicken.png" alt="Button Icon" width="60" height="60">
-</button>
+const gamesContainer = document.getElementById("games");
 
-<button onclick="window.location.href='GameFiles/deathrun3d/index.html'">
-    Death run <br>
-    <img src="GameFiles/deathrun3d/img/death.png" alt="Button Icon" width="60" height="60">
-</button>
+async function loadGames() {
+    try {
+        const response = await fetch(
+            `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${gamesFolder}`
+        );
 
-<button onclick="window.location.href='GameFiles/drifthunters/index.html'">
-    Drift Hunters <br>
-    <img src="GameFiles/drifthunters/logo.png" alt="Button Icon" width="60" height="60">
-</button>
-    
-<button onclick="window.location.href='GameFiles/drivemad/index.html'">
-    Drivemad <br>
-    <img src="GameFiles/drivemad/logo.jpg" alt="Button Icon" width="60" height="60">
-</button>
-    
-<button onclick="window.location.href='GameFiles/grometrydash/index.html'">
-    Geometry Dash <br>
-    <img src="GameFiles/grometrydash/image.png" alt="Button Icon" width="60" height="60">
-</button>
-    
-<button onclick="window.location.href='GameFiles/tombofthemask/index.html'">
-    Tomby <br>
-    <img src="GameFiles/tombofthemask/image.png" alt="Button Icon" width="60" height="60">
-</button>
+        const folders = await response.json();
+
+        if (!Array.isArray(folders)) {
+            gamesContainer.innerHTML = "<p>Couldn't load games.</p>";
+            return;
+        }
+
+        for (const folder of folders) {
+            if (folder.type !== "dir") continue;
+
+            const gameName = formatName(folder.name);
+            const gamePath = `${gamesFolder}/${folder.name}/index.html`;
+
+            const thumbnail = await findThumbnail(folder.name);
+
+            const button = document.createElement("button");
+
+            button.onclick = () => {
+                window.open(gamePath, "_blank");
+            };
+
+            button.innerHTML = `
+                ${gameName}<br>
+                <img src="${thumbnail}" alt="${gameName}" width="60" height="60">
+            `;
+
+            gamesContainer.appendChild(button);
+        }
+
+    } catch (error) {
+        console.error(error);
+        gamesContainer.innerHTML = "<p>Couldn't load games.</p>";
+    }
+}
+
+function formatName(name) {
+    return name
+        .replace(/([a-z])([A-Z])/g, "$1 $2")
+        .replace(/[-_]/g, " ")
+        .replace(/\b\w/g, letter => letter.toUpperCase());
+}
+
+async function findThumbnail(folder) {
+    const image = "imagesam.png";
+    const url = `${gamesFolder}/${folder}/${image}`;
+
+    try {
+        const response = await fetch(url, { method: "HEAD" });
+
+        if (response.ok) {
+            return url;
+        }
+    } catch (error) {
+        // Image doesn't exist
+    }
+
+    return "y8-logo.png";
+}
+
+loadGames();
+</script>
+
+</body>
+</html>
