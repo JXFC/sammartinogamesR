@@ -14,75 +14,76 @@
 <div id="games"></div>
 
 <script>
-const repoOwner = "JXFC";
-const repoName = "sammartinogames";
-const gamesFolder = "GameFiles";
+const games = [
+    ["baldisbasics", "Baldi's Basics"],
+    ["bitlife", "Bitlife"],
+    ["chromedino", "Chrome Dino"],
+    ["crossyroad", "Crossy Road"],
+    ["deathrun3d", "Death Run 3D"],
+    ["drifthunters", "Drift Hunters"],
+    ["drivemad", "Drive Mad"],
+    ["grometrydash", "Geometry Dash"],
+    ["tinyfishing", "Tiny Fishing"],
+    ["tombofthemask", "Tomb of the Mask"],
+    ["towermaster", "Tower Master"],
+    ["vex3", "Vex 3"],
+    ["tetris", "Tetris"],
+    ["stack", "Stack"],
+    ["stackball", "Stack Ball!"],
+    ["soccerrandom", "Soccer Random"],
+    ["ovo2", "OvO 2"],
+    ["motoroadrash3d", "Moto Roadrash"],
+    ["monkeymart", "Monkeymart"],
+    ["googlesnake", "Snake"],
+    ["fruitninja", "Fruit Ninjago"],
+];
 
 const gamesContainer = document.getElementById("games");
 
-async function loadGames() {
-    try {
-        const response = await fetch(
-            `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${gamesFolder}`
-        );
-
-        const folders = await response.json();
-
-        if (!Array.isArray(folders)) {
-            gamesContainer.innerHTML = "<p>Couldn't load games.</p>";
-            return;
-        }
-
-        for (const folder of folders) {
-            if (folder.type !== "dir") continue;
-
-            const gameName = formatName(folder.name);
-            const gamePath = `${gamesFolder}/${folder.name}/index.html`;
-
-            const thumbnail = await findThumbnail(folder.name);
-
-            const button = document.createElement("button");
-
-            button.onclick = () => {
-                window.open(gamePath, "_blank");
-            };
-
-            button.innerHTML = `
-                ${gameName}<br>
-                <img src="${thumbnail}" alt="${gameName}" width="60" height="60">
-            `;
-
-            gamesContainer.appendChild(button);
-        }
-
-    } catch (error) {
-        console.error(error);
-        gamesContainer.innerHTML = "<p>Couldn't load games.</p>";
-    }
-}
-
-function formatName(name) {
-    return name
-        .replace(/([a-z])([A-Z])/g, "$1 $2")
-        .replace(/[-_]/g, " ")
-        .replace(/\b\w/g, letter => letter.toUpperCase());
-}
-
 async function findThumbnail(folder) {
-    const image = "imagesam.png";
-    const url = `${gamesFolder}/${folder}/${image}`;
+    const path = `GameFiles/${folder}/imagesam.png`;
 
     try {
-        const response = await fetch(url, { method: "HEAD" });
+        const response = await fetch(path, {
+            method: "HEAD"
+        });
 
         if (response.ok) {
-            return url;
+            return path;
         }
     } catch (error) {
-        // Image doesn't exist
+        // No imagesam.png
     }
 
     return "y8-logo.png";
+}
+
+async function loadGames() {
+    for (const [folder, name] of games) {
+
+        const button = document.createElement("button");
+
+        button.onclick = () => {
+            window.open(
+                `GameFiles/${folder}/index.html`,
+                "_blank"
+            );
+        };
+
+        const thumbnail = await findThumbnail(folder);
+
+        button.innerHTML = `
+            ${name}<br>
+            <img
+                src="${thumbnail}"
+                alt="${name}"
+                width="60"
+                height="60"
+            >
+        `;
+
+        gamesContainer.appendChild(button);
+    }
 }
 
 loadGames();
